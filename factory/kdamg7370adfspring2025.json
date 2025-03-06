@@ -1,0 +1,9 @@
+{
+	"name": "kdamg7370adfspring2025",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "6bb2759c-8c5d-4412-9e6a-d88e176da949",
+		"tenantId": "a8eec281-aaa3-4dae-ac9b-9a398b9215e7"
+	}
+}

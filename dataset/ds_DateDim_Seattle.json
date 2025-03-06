@@ -1,0 +1,78 @@
+{
+	"name": "ds_DateDim_Seattle",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "DT",
+				"type": "DATE"
+			},
+			{
+				"name": "ABRV_DAY_NAME",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "MONTH_NAME",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "START_DAY_OF_MONTH",
+				"type": "DATE"
+			},
+			{
+				"name": "END_DAY_OF_MONTH",
+				"type": "DATE"
+			},
+			{
+				"name": "QUARTER_NUM",
+				"type": "NUMBER",
+				"precision": 2,
+				"scale": 0
+			},
+			{
+				"name": "DAY_OF_WEEK",
+				"type": "NUMBER",
+				"precision": 2,
+				"scale": 0
+			},
+			{
+				"name": "IS_WEEKEND",
+				"type": "NUMBER",
+				"precision": 1,
+				"scale": 0
+			},
+			{
+				"name": "YEAR_NUM",
+				"type": "NUMBER",
+				"precision": 4,
+				"scale": 0
+			},
+			{
+				"name": "MONTH_NUM",
+				"type": "NUMBER",
+				"precision": 2,
+				"scale": 0
+			},
+			{
+				"name": "DAY_NUM",
+				"type": "NUMBER",
+				"precision": 2,
+				"scale": 0
+			},
+			{
+				"name": "DATE_DIM_SK",
+				"type": "VARCHAR"
+			}
+		],
+		"typeProperties": {
+			"schema": "TMEMP_SCHEMA",
+			"table": "DATE_DIM"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

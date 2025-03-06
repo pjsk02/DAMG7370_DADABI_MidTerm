@@ -1,0 +1,44 @@
+{
+	"name": "ds_BreedDim_Seattle",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "BREED_SK",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "PRIMARY_BREED_NAME",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "SECONDARY_BREED_NAME",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "SPECIES_NAME",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "DI_JOB_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "DI_LOAD_DT",
+				"type": "DATE"
+			}
+		],
+		"typeProperties": {
+			"schema": "TMEMP_SCHEMA",
+			"table": "BREED_DIM"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

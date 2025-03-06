@@ -1,0 +1,17 @@
+{
+	"name": "SnowflakeTable_NYPD",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_NYPD_Connection",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "IP_NYPD_SCHEMA",
+			"table": "FACT_ARRESTS"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

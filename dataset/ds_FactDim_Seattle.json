@@ -1,0 +1,48 @@
+{
+	"name": "ds_FactDim_Seattle",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "PET_LICENSE_SK",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "ISSUED_DATE_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "LOCATION_ID",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "BREED_ID",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "DT_JOB_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "DT_CREATED_DT",
+				"type": "TIMESTAMP_NTZ"
+			}
+		],
+		"typeProperties": {
+			"schema": "TMEMP_SCHEMA",
+			"table": "PET_LICENSES_FACT"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
