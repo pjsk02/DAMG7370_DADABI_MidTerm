@@ -1,0 +1,10 @@
+{
+	"name": "IMDb_AzureKeyVault",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://imdbkvdamgspring2025.vault.azure.net/"
+		}
+	}
+}

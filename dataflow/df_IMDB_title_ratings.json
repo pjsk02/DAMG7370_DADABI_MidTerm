@@ -1,0 +1,69 @@
+{
+	"name": "df_IMDB_title_ratings",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "IMDb_parquet_title_ratings",
+						"type": "DatasetReference"
+					},
+					"name": "sourceTitleRatings"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_Ratings",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSnowflake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_Id as string (\"19\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          averageRating as float,",
+				"          numVotes as long",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> sourceTitleRatings",
+				"sourceTitleRatings derive(Job_Id = $Job_Id,",
+				"          Load_Dt = currentDate()) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          TCONST as string,",
+				"          AVERAGERATING as double,",
+				"          NUMVOTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST = tconst,",
+				"          AVERAGERATING = averageRating,",
+				"          NUMVOTES = numVotes,",
+				"          JOB_ID = Job_Id,",
+				"          LOAD_DT = Load_Dt",
+				"     )) ~> sinkSnowflake"
+			]
+		}
+	}
+}
