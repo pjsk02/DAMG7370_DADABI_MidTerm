@@ -16,7 +16,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "IMDb_parquet_title_episode",
+						"referenceName": "SnowflakeTable_title_episode",
 						"type": "DatasetReference"
 					},
 					"name": "sinkSnowFlake",
@@ -46,10 +46,12 @@
 				"          Load_Dt = currentDate()) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'parquet',",
-				"     umask: 0022,",
-				"     preCommands: [],",
-				"     postCommands: [],",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     stageInsert: true,",
 				"     mapColumn(",
 				"          tconst,",
 				"          parentTconst,",
