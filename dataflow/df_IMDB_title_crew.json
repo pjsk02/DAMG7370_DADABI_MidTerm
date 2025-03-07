@@ -1,0 +1,62 @@
+{
+	"name": "df_IMDB_title_crew",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "IMDb_parquet_title_crew",
+						"type": "DatasetReference"
+					},
+					"name": "sourceTitleCrew",
+					"description": "Import data from IMDb_parquet_title_crew"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "IMDb_parquet_title_crew",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSnowflake",
+					"description": "Export data to SnowflakeTable_title_crew"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_Id as string (\"39\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          directors as string,",
+				"          writers as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> sourceTitleCrew",
+				"sourceTitleCrew derive(Job_Id = $Job_Id,",
+				"          Load_Dt = currentDate()) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     mapColumn(",
+				"          tconst,",
+				"          directors,",
+				"          writers,",
+				"          Job_Id,",
+				"          Load_Dt",
+				"     )) ~> sinkSnowflake"
+			]
+		}
+	}
+}
