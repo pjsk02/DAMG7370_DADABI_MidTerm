@@ -1,0 +1,11 @@
+{
+	"name": "IMDb_AzureDataLakeStorage_LS",
+	"properties": {
+		"description": "adf to access imdb storage container",
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://imdbdamgspring2025.dfs.core.windows.net/"
+		}
+	}
+}
