@@ -1,10 +1,14 @@
 {
-	"name": "df_IMDB_akas",
+	"name": "df_IMDB_title_ratings",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "IMDb_parquet_title_ratings",
+						"type": "DatasetReference"
+					},
 					"name": "source1"
 				}
 			],
@@ -12,7 +16,9 @@
 			"transformations": [],
 			"scriptLines": [
 				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source1"
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> source1"
 			]
 		}
 	}
