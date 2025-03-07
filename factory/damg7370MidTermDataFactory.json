@@ -1,0 +1,9 @@
+{
+	"name": "damg7370MidTermDataFactory",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "28f79c0a-e0e3-46e1-9bc5-10fbd30b79c2",
+		"tenantId": "a8eec281-aaa3-4dae-ac9b-9a398b9215e7"
+	}
+}
