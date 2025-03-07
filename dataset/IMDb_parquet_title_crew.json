@@ -1,0 +1,33 @@
+{
+	"name": "IMDb_parquet_title_crew",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "IMDb_AzureDataLakeStorage_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "title_crew_Cleaned.parquet",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "tconst",
+				"type": "UTF8"
+			},
+			{
+				"name": "directors",
+				"type": "UTF8"
+			},
+			{
+				"name": "writers",
+				"type": "UTF8"
+			}
+		]
+	}
+}
