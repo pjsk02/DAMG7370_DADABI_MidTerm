@@ -115,6 +115,8 @@
 			{
 				"name": "Load_Title_Basics_Stage",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Load_Title_Crew_Stage",
