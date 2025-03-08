@@ -16,7 +16,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "IMDb_parquet_title_crew",
+						"referenceName": "SnowflakeTable_title_crew",
 						"type": "DatasetReference"
 					},
 					"name": "sinkSnowflake",
@@ -45,17 +45,27 @@
 				"          Load_Dt = currentDate()) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'parquet',",
-				"     umask: 0022,",
-				"     preCommands: [],",
-				"     postCommands: [],",
+				"     input(",
+				"          TCONST as string,",
+				"          DIRECTORS as string,",
+				"          WRITERS as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     mapColumn(",
 				"          tconst,",
 				"          directors,",
 				"          writers,",
 				"          Job_Id,",
 				"          Load_Dt",
-				"     )) ~> sinkSnowflake"
+				"     ),",
+				"     preCommands: [],",
+				"     postCommands: []) ~> sinkSnowflake"
 			]
 		}
 	}
