@@ -18,7 +18,7 @@
 						"referenceName": "SnowflakeTable_name_basics",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sinkSnowflake"
 				}
 			],
 			"transformations": [
@@ -60,10 +60,19 @@
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sink1"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          NCONST = nconst,",
+				"          PRIMARYNAME = primaryName,",
+				"          BIRTHYEAR = birthYear,",
+				"          DEATHYEAR = deathYear,",
+				"          PRIMARYPROFESSION = primaryProfession,",
+				"          KNOWNFORTITLES = knownForTitles,",
+				"          JOB_ID = Job_Id,",
+				"          LOAD_DT = Load_Dt",
+				"     )) ~> sinkSnowflake"
 			]
 		}
 	}
