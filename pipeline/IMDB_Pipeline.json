@@ -37,6 +37,8 @@
 			{
 				"name": "Load_Title_Episode_Stage",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Load_Title_Ratings_Stage",
