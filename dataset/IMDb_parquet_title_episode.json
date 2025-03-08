@@ -1,0 +1,20 @@
+{
+	"name": "IMDb_parquet_title_episode",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "IMDb_AzureDataLakeStorage_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "title_episode_Cleaned.parquet",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

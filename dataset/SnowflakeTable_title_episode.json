@@ -1,0 +1,16 @@
+{
+	"name": "SnowflakeTable_title_episode",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_IMDB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "IMDB_SCHEMA",
+			"table": "STAGE_TITLE_EPISODE"
+		}
+	}
+}
