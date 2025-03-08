@@ -72,6 +72,43 @@
 					},
 					"traceLevel": "Coarse"
 				}
+			},
+			{
+				"name": "Load_Title_Crew_Stage",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Load_Title_Episode_Stage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_IMDB_title_crew",
+						"type": "DataFlowReference",
+						"parameters": {
+							"Job_Id": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Coarse"
+				}
 			}
 		],
 		"annotations": []
