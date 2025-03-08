@@ -1,5 +1,5 @@
 {
-	"name": "dataflow2",
+	"name": "df_IMDB_title_basics",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -18,7 +18,7 @@
 						"referenceName": "SnowflakeTable_title_basics",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sinkSnowflake"
 				}
 			],
 			"transformations": [
@@ -81,7 +81,7 @@
 				"          GENRES = genres,",
 				"          JOB_ID = Job_Id,",
 				"          LOAD_DT = Load_Dt",
-				"     )) ~> sink1"
+				"     )) ~> sinkSnowflake"
 			]
 		}
 	}
