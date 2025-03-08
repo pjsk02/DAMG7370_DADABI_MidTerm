@@ -50,6 +50,7 @@
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     stageInsert: true,",
 				"     mapColumn(",
