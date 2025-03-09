@@ -54,12 +54,12 @@
 				"     format: 'table',",
 				"     stageInsert: true,",
 				"     mapColumn(",
-				"          tconst,",
-				"          parentTconst,",
-				"          seasonNumber,",
-				"          episodeNumber,",
-				"          Job_Id,",
-				"          Load_Dt",
+				"          TCONST = tconst,",
+				"          PARENTTCONST = parentTconst,",
+				"          SEASONNUMBER = seasonNumber,",
+				"          EPISODENUMBER = episodeNumber,",
+				"          JOB_ID = Job_Id,",
+				"          LOAD_DT = Load_Dt",
 				"     )) ~> sinkSnowFlake"
 			]
 		}
