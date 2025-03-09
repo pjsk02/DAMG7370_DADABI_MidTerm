@@ -1,0 +1,20 @@
+{
+	"name": "IMDb_Parquet_Title_Akas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "IMDb_AzureDataLakeStorage_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "title_akas_Cleaned.parquet",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
