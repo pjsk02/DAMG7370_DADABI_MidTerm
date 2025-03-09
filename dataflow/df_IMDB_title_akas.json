@@ -1,0 +1,119 @@
+{
+	"name": "df_IMDB_title_akas",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "IMDb_Parquet_Title_Akas",
+						"type": "DatasetReference"
+					},
+					"name": "sourceTitleAkas"
+				},
+				{
+					"dataset": {
+						"referenceName": "Country_Lang_Names_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "sourceLanguageMapping"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_akas",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSnowflake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "RemovingNulls"
+				},
+				{
+					"name": "MakingIntoUpperCase"
+				},
+				{
+					"name": "derivedColumns"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_Id as string (\"69\")",
+				"}",
+				"source(output(",
+				"          titleId as string,",
+				"          ordering as long,",
+				"          title as string,",
+				"          region as string,",
+				"          language as string,",
+				"          types as string,",
+				"          attributes as string,",
+				"          isOriginalTitle as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> sourceTitleAkas",
+				"source(output(",
+				"          Country_Code as string,",
+				"          Country_Name as string,",
+				"          Language_Codes as string,",
+				"          Top_Language_Code as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceLanguageMapping",
+				"sourceTitleAkas, sourceLanguageMapping lookup(region == Country_Code,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 select(mapColumn(",
+				"          titleId,",
+				"          ordering,",
+				"          title,",
+				"          region,",
+				"          Top_Language_Code,",
+				"          types,",
+				"          attributes,",
+				"          isOriginalTitle",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> select1",
+				"select1 derive(Top_Language_Code = iifNull(Top_Language_Code,'Unknown')) ~> RemovingNulls",
+				"RemovingNulls derive(Top_Language_Code = upper({Top_Language_Code})) ~> MakingIntoUpperCase",
+				"MakingIntoUpperCase derive(Job_Id = $Job_Id,",
+				"          Load_Dt = currentDate()) ~> derivedColumns",
+				"derivedColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLEID = titleId,",
+				"          ORDERING = ordering,",
+				"          TITLE = title,",
+				"          REGION = region,",
+				"          LANGUAGE = Top_Language_Code,",
+				"          TYPES = types,",
+				"          ATTRIBUTES = attributes,",
+				"          ISORIGINALTITLE = isOriginalTitle,",
+				"          JOB_ID = Job_Id,",
+				"          LOAD_DT = Load_Dt",
+				"     )) ~> sinkSnowflake"
+			]
+		}
+	}
+}
