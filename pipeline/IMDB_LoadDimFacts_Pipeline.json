@@ -1,0 +1,38 @@
+{
+	"name": "IMDB_LoadDimFacts_Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "Populate_DimTitle",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_IMDb_DIM_TITLE",
+						"type": "DataFlowReference",
+						"parameters": {
+							"Job_Id": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Coarse"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
