@@ -1,5 +1,5 @@
 {
-	"name": "IMDB_Pipeline",
+	"name": "IMDB_Stage_Pipeline",
 	"properties": {
 		"activities": [
 			{
@@ -232,6 +232,8 @@
 			{
 				"name": "Load_Title_Akas_Stage",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Load_Title_Principles",
