@@ -1,0 +1,25 @@
+{
+	"name": "df_IMDB_DIM_LANG",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_akas",
+						"type": "DatasetReference"
+					},
+					"name": "stageLanguage",
+					"description": "Import data from SnowflakeTable_title_"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> stageLanguage"
+			]
+		}
+	}
+}
