@@ -10,6 +10,16 @@
 						"type": "DatasetReference"
 					},
 					"name": "stageNameBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Dim_People",
+						"type": "DatasetReference"
+					},
+					"name": "DimPeople"
+				},
+				{
+					"name": "DimPeopleMaxID"
 				}
 			],
 			"sinks": [],
@@ -27,7 +37,23 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> stageNameBasics"
+				"     format: 'table') ~> stageNameBasics",
+				"source(output(",
+				"          PERSON_ID_SK as decimal(38,0),",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(38,0),",
+				"          DEATHYEAR as decimal(38,0),",
+				"          PRIMARYPROFESSION as string,",
+				"          KNWONFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimPeople",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> DimPeopleMaxID"
 			]
 		}
 	}
