@@ -1,0 +1,97 @@
+{
+	"name": "df_IMDb_DIM_Genre",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_basics",
+						"type": "DatasetReference"
+					},
+					"name": "StageTitleBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitleBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitleMaxID"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTIMEMINUTES as decimal(38,0),",
+				"          GENRES as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageTitleBasics",
+				"source(output(",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTTIMEMINUTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimTitleBasics",
+				"source(output(",
+				"          MAXTITLESK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(genre_id_sk),0) as MaxGenreSK FROM IMDB_SCHEMA.DIM_TITLE',",
+				"     format: 'query') ~> DimTitleMaxID",
+				"StageTitleBasics, DimTitleMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 aggregate(groupBy(TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          MAXTITLESK,",
+				"          GENRES),",
+				"     CountRow = count(TCONST)) ~> aggregate1"
+			]
+		}
+	}
+}
