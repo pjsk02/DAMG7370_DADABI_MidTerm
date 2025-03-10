@@ -1,0 +1,37 @@
+{
+	"name": "SnowflakeTable_DIM_DATE",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_IMDB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "DATE_ID_SK",
+				"type": "NUMBER",
+				"precision": 18,
+				"scale": 0
+			},
+			{
+				"name": "YEAR",
+				"type": "NUMBER",
+				"precision": 4,
+				"scale": 0
+			},
+			{
+				"name": "JOB_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "LOAD_DT",
+				"type": "DATE"
+			}
+		],
+		"typeProperties": {
+			"schema": "IMDB_SCHEMA",
+			"table": "DIM_DATE"
+		}
+	}
+}
