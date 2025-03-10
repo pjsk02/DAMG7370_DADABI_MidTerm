@@ -1,26 +1,24 @@
 {
-	"name": "df_IMDB_title_crew",
+	"name": "df_IMDB_title_Principles",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "IMDb_parquet_title_crew",
+						"referenceName": "IMDB_title_principles",
 						"type": "DatasetReference"
 					},
-					"name": "sourceTitleCrew",
-					"description": "Import data from IMDb_parquet_title_crew"
+					"name": "sourceTitlePrinciples"
 				}
 			],
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "SnowflakeTable_title_crew",
+						"referenceName": "SnowflakeTable_title_Principles",
 						"type": "DatasetReference"
 					},
-					"name": "sinkSnowflake",
-					"description": "Export data to SnowflakeTable_title_crew"
+					"name": "sinkSnowflake"
 				}
 			],
 			"transformations": [
@@ -30,25 +28,31 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     Job_Id as string (\"39\")",
+				"     Job_Id as string (\"69\")",
 				"}",
 				"source(output(",
 				"          tconst as string,",
-				"          directors as string,",
-				"          writers as string",
+				"          ordering as long,",
+				"          nconst as string,",
+				"          category as string,",
+				"          job as string,",
+				"          characters as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     format: 'parquet') ~> sourceTitleCrew",
-				"sourceTitleCrew derive(Job_Id = $Job_Id,",
+				"     format: 'parquet') ~> sourceTitlePrinciples",
+				"sourceTitlePrinciples derive(Job_Id = $Job_Id,",
 				"          Load_Dt = currentDate()) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          TCONST as string,",
-				"          DIRECTORS as string,",
-				"          WRITERS as string,",
+				"          ORDERING as decimal(38,0),",
+				"          NCONST as string,",
+				"          CATEGORY as string,",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
 				"          JOB_ID as string,",
 				"          LOAD_DT as date",
 				"     ),",
@@ -56,16 +60,19 @@
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
+				"     stageInsert: true,",
 				"     mapColumn(",
 				"          TCONST = tconst,",
-				"          DIRECTORS = directors,",
-				"          WRITERS = writers,",
+				"          ORDERING = ordering,",
+				"          NCONST = nconst,",
+				"          CATEGORY = category,",
+				"          JOB = job,",
+				"          CHARACTERS = characters,",
 				"          JOB_ID = Job_Id,",
 				"          LOAD_DT = Load_Dt",
-				"     ),",
-				"     preCommands: [],",
-				"     postCommands: []) ~> sinkSnowflake"
+				"     )) ~> sinkSnowflake"
 			]
 		}
 	}

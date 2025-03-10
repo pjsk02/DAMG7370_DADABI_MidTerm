@@ -1,0 +1,188 @@
+{
+	"name": "df_IMDb_DIM_TITLE",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_basics",
+						"type": "DatasetReference"
+					},
+					"name": "stageTitleBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitleMAXID"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "sinkDimTitle"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "surrogateKey2"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_Id as string (\"19\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTIMEMINUTES as decimal(38,0),",
+				"          GENRES as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> stageTitleBasics",
+				"source(output(",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTTIMEMINUTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDimTitle",
+				"source(output(",
+				"          MAXTITLESK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(title_id_sk),0) as MaxTitleSK FROM IMDB_SCHEMA.DIM_TITLE',",
+				"     format: 'query') ~> DimTitleMAXID",
+				"aggregate1, sourceDimTitle join(aggregate1@TCONST == sourceDimTitle@TCONST",
+				"     && aggregate1@TITLETYPE == sourceDimTitle@TITLETYPE",
+				"     && aggregate1@PRIMARYTITLE == sourceDimTitle@PRIMARYTITLE",
+				"     && aggregate1@ORIGINALTITLE == sourceDimTitle@ORIGINALTITLE",
+				"     && aggregate1@ISADULT == sourceDimTitle@ISADULT",
+				"     && aggregate1@STARTYEAR == sourceDimTitle@STARTYEAR",
+				"     && aggregate1@ENDYEAR == sourceDimTitle@ENDYEAR",
+				"     && RUNTIMEMINUTES == RUNTTIMEMINUTES,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"stageTitleBasics, DimTitleMAXID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 aggregate(groupBy(TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          MAXTITLESK),",
+				"     COUNT_ROW = count(TCONST)) ~> aggregate1",
+				"select1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey2",
+				"surrogateKey2 derive(TITLE_ID_SK = MAXTITLESK+RowNum,",
+				"          JOB_ID = $Job_Id,",
+				"          LOAD_DT = currentDate()) ~> derivedColumn1",
+				"join1 select(mapColumn(",
+				"          TCONST = aggregate1@TCONST,",
+				"          TITLETYPE = aggregate1@TITLETYPE,",
+				"          PRIMARYTITLE = aggregate1@PRIMARYTITLE,",
+				"          ORIGINALTITLE = aggregate1@ORIGINALTITLE,",
+				"          ISADULT = aggregate1@ISADULT,",
+				"          STARTYEAR = aggregate1@STARTYEAR,",
+				"          ENDYEAR = aggregate1@ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          MAXTITLESK,",
+				"          COUNT_ROW",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTTIMEMINUTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLE_ID_SK,",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTTIMEMINUTES = RUNTIMEMINUTES,",
+				"          JOB_ID,",
+				"          LOAD_DT",
+				"     )) ~> sinkDimTitle"
+			]
+		}
+	}
+}
