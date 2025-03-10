@@ -1,0 +1,152 @@
+{
+	"name": "df_IMDB_DIM_LANGUAGE",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_akas",
+						"type": "DatasetReference"
+					},
+					"name": "stageLanguage"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimLanguage",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimLanguage"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimLanguage",
+						"type": "DatasetReference"
+					},
+					"name": "DimLanguageMaxID"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimLanguage",
+						"type": "DatasetReference"
+					},
+					"name": "sinkDIMLanguage"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"49\")",
+				"}",
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> stageLanguage",
+				"source(output(",
+				"          LANGUAGE_ID_SK as decimal(38,0),",
+				"          LANGUAGE_CODE as string,",
+				"          LANGUAGE_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDimLanguage",
+				"source(output(",
+				"          MAXLANGSK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(language_id_sk),0) as MaxLangSK FROM IMDB_SCHEMA.DIM_LANGUAGES',",
+				"     format: 'query') ~> DimLanguageMaxID",
+				"stageLanguage, DimLanguageMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 aggregate(groupBy(LANGUAGE,",
+				"          REGION,",
+				"          MAXLANGSK),",
+				"     COUNT_ROW = count(LANGUAGE)) ~> aggregate1",
+				"aggregate1, sourceDimLanguage join(LANGUAGE == LANGUAGE_CODE",
+				"     && REGION == LANGUAGE_NAME",
+				"     && MAXLANGSK == LANGUAGE_ID_SK,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          LANGUAGE,",
+				"          REGION,",
+				"          MAXLANGSK,",
+				"          COUNT_ROW",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(LANGUAGE_ID_SK = MAXLANGSK +RowNum,",
+				"          Job_ID = $Job_ID,",
+				"          LOAD_DT = currentDate()) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          LANGUAGE_ID_SK as decimal(38,0),",
+				"          LANGUAGE_CODE as string,",
+				"          LANGUAGE_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          LANGUAGE_ID_SK,",
+				"          LANGUAGE_CODE = LANGUAGE,",
+				"          LANGUAGE_NAME = REGION,",
+				"          JOB_ID = Job_ID,",
+				"          LOAD_DT",
+				"     )) ~> sinkDIMLanguage"
+			]
+		}
+	}
+}
