@@ -1,18 +1,74 @@
 {
-	"name": "df_IMDb_DIM_DATE",
+	"name": "df_IMDb_DIM_Date",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DIM_DATE",
+						"type": "DatasetReference"
+					},
 					"name": "source1"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DIM_DATE",
+						"type": "DatasetReference"
+					},
+					"name": "sinkDateDim"
+				}
+			],
+			"transformations": [
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn"
+				}
+			],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source1"
+				"parameters{",
+				"     Job_Id as string (\"29\")",
+				"}",
+				"source(output(",
+				"          DATE_ID_SK as decimal(18,0),",
+				"          YEAR as decimal(4,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> source1",
+				"source1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(JOB_ID = $Job_Id,",
+				"          LOAD_DT = currentDate()) ~> derivedColumn",
+				"derivedColumn sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          DATE_ID_SK as decimal(18,0),",
+				"          YEAR as decimal(4,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          DATE_ID_SK,",
+				"          YEAR,",
+				"          JOB_ID,",
+				"          LOAD_DT",
+				"     )) ~> sinkDateDim"
 			]
 		}
 	}
