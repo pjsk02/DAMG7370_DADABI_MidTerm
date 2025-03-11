@@ -1,0 +1,100 @@
+{
+	"name": "df_IMDB_DIM_CATEGORY",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_Principles",
+						"type": "DatasetReference"
+					},
+					"name": "stageCategory"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimCategory",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDimCategory"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimCategory",
+						"type": "DatasetReference"
+					},
+					"name": "DimCategoryMaxID"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          ORDERING as decimal(38,0),",
+				"          NCONST as string,",
+				"          CATEGORY as string,",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> stageCategory",
+				"source(output(",
+				"          CATEGORY_ID_SK as decimal(38,0),",
+				"          CATEGORY_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDimCategory",
+				"source(output(",
+				"          MAXCATEGORYSK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(category_id_sk),0) as MaxCategorySK FROM IMDB_SCHEMA.DIM_CATEGORY',",
+				"     format: 'query') ~> DimCategoryMaxID",
+				"stageCategory, DimCategoryMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 aggregate(groupBy(CATEGORY,",
+				"          MAXCATEGORYSK),",
+				"     COUNT_ROW = count(TCONST)) ~> aggregate1",
+				"aggregate1, sourceDimCategory join(CATEGORY == CATEGORY_NAME",
+				"     && MAXCATEGORYSK == CATEGORY_ID_SK,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          CATEGORY,",
+				"          MAXCATEGORYSK,",
+				"          COUNT_ROW,",
+				"          CATEGORY_ID_SK,",
+				"          CATEGORY_NAME",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1"
+			]
+		}
+	}
+}
