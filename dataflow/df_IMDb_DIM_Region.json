@@ -36,6 +36,9 @@
 				},
 				{
 					"name": "aggregate1"
+				},
+				{
+					"name": "join2"
 				}
 			],
 			"scriptLines": [
@@ -65,14 +68,21 @@
 				"     validateSchema: false,",
 				"     query: 'select NVL(MAX(region_id_sk),0) as MaxRegionSK FROM IMDB_SCHEMA.DIM_REGION',",
 				"     format: 'query') ~> DimRegionMAXID",
-				"aggregate1 derive() ~> derivedColumn1",
+				"join2 derive() ~> derivedColumn1",
 				"sourceRegionFile, DimRegionMAXID join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join1",
 				"join1 aggregate(groupBy(Country_Code,",
-				"          Country_Name)) ~> aggregate1"
+				"          Country_Name),",
+				"     COUNTRow = count(Country_Code)) ~> aggregate1",
+				"aggregate1, DimRegion join(Country_Code == REGION_CODE",
+				"     && Country_Name == REGION_NAME,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2"
 			]
 		}
 	}
