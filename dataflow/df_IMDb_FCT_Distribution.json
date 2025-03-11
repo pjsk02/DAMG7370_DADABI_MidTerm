@@ -61,16 +61,21 @@
 					"name": "FactTitleDistri"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_FCT_Distribution",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "join1"
 				},
 				{
 					"name": "join2"
-				},
-				{
-					"name": "lookup1"
 				},
 				{
 					"name": "join3"
@@ -89,6 +94,12 @@
 				},
 				{
 					"name": "join6"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "join7"
 				}
 			],
 			"scriptLines": [
@@ -177,11 +188,14 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> StageTitleBasics",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          MAXFCTDISTRISK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     query: 'select NVL(MAX(fact_title_distribution_sk),0) as MaxFctDistriSK FROM IMDB_SCHEMA.FACT_TITLE_DISTRIBUTION',",
 				"     format: 'query') ~> FactTitleDistri",
-				"lookup1, DimTitle join(TITLEID == DimTitle@TCONST,",
+				"join7, DimTitle join(StageTitleBasics@TCONST == DimTitle@TCONST,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
@@ -191,10 +205,6 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join2",
-				"StageTitleAkas, StageTitleBasics lookup(TITLE == TCONST,",
-				"     multiple: false,",
-				"     pickup: 'any',",
-				"     broadcast: 'auto')~> lookup1",
 				"join2, DimRegion join(REGION == REGION_CODE,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
@@ -213,11 +223,12 @@
 				"join6 select(mapColumn(",
 				"          JOB_ID = StageTitleAkas@JOB_ID,",
 				"          LOAD_DT = StageTitleAkas@LOAD_DT,",
-				"          TITLE_ID_SK,",
+				"          TITLE_ID_SK = TITLEID,",
 				"          GENRE_ID_SK,",
 				"          REGION_ID_SK,",
 				"          LANGUAGE_ID_SK,",
-				"          DATE_ID_SK",
+				"          DATE_ID_SK,",
+				"          MAXFCTDISTRISK",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
@@ -228,7 +239,44 @@
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join6"
+				"     broadcast: 'auto')~> join6",
+				"surrogateKey1 derive(FACT_TITLE_DISTRIBUTION_SK = MAXFCTDISTRISK+RowNum) ~> derivedColumn1",
+				"StageTitleAkas, StageTitleBasics join(TITLEID == TCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join7",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          FACT_TITLE_DISTRIBUTION_SK as decimal(38,0),",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          GENRE_ID_SK as decimal(38,0),",
+				"          REGION_ID_SK as decimal(38,0),",
+				"          LANGUAGE_ID_SK as decimal(38,0),",
+				"          DATE_ID_SK as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          FACT_TITLE_DISTRIBUTION_SK,",
+				"          TITLE_ID_SK,",
+				"          GENRE_ID_SK,",
+				"          REGION_ID_SK,",
+				"          LANGUAGE_ID_SK,",
+				"          DATE_ID_SK,",
+				"          JOB_ID,",
+				"          LOAD_DT",
+				"     )) ~> sink1"
 			]
 		}
 	}
