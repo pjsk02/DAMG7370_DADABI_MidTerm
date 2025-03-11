@@ -26,7 +26,15 @@
 					"name": "DimRegionMAXID"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimRegion",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -39,9 +47,18 @@
 				},
 				{
 					"name": "join2"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "surrogateKey1"
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     Job_Id as string (\"69\")",
+				"}",
 				"source(output(",
 				"          Country_Code as string,",
 				"          Country_Name as string,",
@@ -68,21 +85,60 @@
 				"     validateSchema: false,",
 				"     query: 'select NVL(MAX(region_id_sk),0) as MaxRegionSK FROM IMDB_SCHEMA.DIM_REGION',",
 				"     format: 'query') ~> DimRegionMAXID",
-				"join2 derive() ~> derivedColumn1",
+				"surrogateKey1 derive(REGION_ID_SK = MAXREGIONSK + RowNum,",
+				"          Job_Id = $Job_Id,",
+				"          Load_Dt = currentDate()) ~> derivedColumn1",
 				"sourceRegionFile, DimRegionMAXID join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join1",
 				"join1 aggregate(groupBy(Country_Code,",
-				"          Country_Name),",
-				"     COUNTRow = count(Country_Code)) ~> aggregate1",
+				"          Country_Name,",
+				"          MAXREGIONSK),",
+				"     CountRow = count(Country_Code)) ~> aggregate1",
 				"aggregate1, DimRegion join(Country_Code == REGION_CODE",
 				"     && Country_Name == REGION_NAME,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join2"
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          REGION_ID_SK,",
+				"          MAXREGIONSK,",
+				"          CountRow,",
+				"          Country_Code,",
+				"          Country_Name",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> select1",
+				"select1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          REGION_ID_SK as decimal(38,0),",
+				"          REGION_CODE as string,",
+				"          REGION_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          REGION_ID_SK,",
+				"          REGION_CODE = Country_Code,",
+				"          REGION_NAME = Country_Name,",
+				"          JOB_ID = Job_Id,",
+				"          LOAD_DT = Load_Dt",
+				"     )) ~> sink1"
 			]
 		}
 	}
