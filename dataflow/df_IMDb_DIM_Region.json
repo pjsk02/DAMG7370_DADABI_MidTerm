@@ -1,0 +1,79 @@
+{
+	"name": "df_IMDb_DIM_Region",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Country_Lang_Names_CSV",
+						"type": "DatasetReference"
+					},
+					"name": "sourceRegionFile"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Dim_Region",
+						"type": "DatasetReference"
+					},
+					"name": "DimRegion"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Dim_Region",
+						"type": "DatasetReference"
+					},
+					"name": "DimRegionMAXID"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Country_Code as string,",
+				"          Country_Name as string,",
+				"          Language_Codes as string,",
+				"          Top_Language_Code as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceRegionFile",
+				"source(output(",
+				"          REGION_ID_SK as decimal(38,0),",
+				"          REGION_CODE as string,",
+				"          REGION_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimRegion",
+				"source(output(",
+				"          MAXREGIONSK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(region_id_sk),0) as MaxRegionSK FROM IMDB_SCHEMA.DIM_REGION',",
+				"     format: 'query') ~> DimRegionMAXID",
+				"aggregate1 derive() ~> derivedColumn1",
+				"sourceRegionFile, DimRegionMAXID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 aggregate(groupBy(Country_Code,",
+				"          Country_Name)) ~> aggregate1"
+			]
+		}
+	}
+}
