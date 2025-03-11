@@ -1,0 +1,143 @@
+{
+	"name": "df_IMDb_FCT_Performance",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_Ratings",
+						"type": "DatasetReference"
+					},
+					"name": "TitleRatings"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_FCT_Performance",
+						"type": "DatasetReference"
+					},
+					"name": "FactPerformance"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_FCT_Performance",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "surrogateKey1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          AVERAGERATING as double,",
+				"          NUMVOTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleRatings",
+				"source(output(",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTTIMEMINUTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimTitle",
+				"source(output(",
+				"          MAXFCTPERFOSK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(fact_title_perfomance_sk),0) as MaxFctPerfoSK FROM IMDB_SCHEMA.FACT_TITLE_PERFOMANCE',",
+				"     format: 'query') ~> FactPerformance",
+				"TitleRatings, DimTitle join(TitleRatings@TCONST == DimTitle@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, FactPerformance join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"surrogateKey1 derive(FACT_TITLE_PERFOMANCE_SK = MAXFCTPERFOSK+RowNum) ~> derivedColumn1",
+				"join2 select(mapColumn(",
+				"          AVERAGERATING,",
+				"          NUMVOTES,",
+				"          TITLE_ID_SK,",
+				"          JOB_ID = DimTitle@JOB_ID,",
+				"          LOAD_DT = DimTitle@LOAD_DT,",
+				"          MAXFCTPERFOSK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          FACT_TITLE_PERFOMANCE_SK as decimal(38,0),",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          AVERAGERATING as double,",
+				"          NUMVOTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          FACT_TITLE_PERFOMANCE_SK,",
+				"          TITLE_ID_SK,",
+				"          AVERAGERATING,",
+				"          NUMVOTES,",
+				"          JOB_ID,",
+				"          LOAD_DT",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

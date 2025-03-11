@@ -1,0 +1,171 @@
+{
+	"name": "df_IMDb_FCT_Episode",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_episode",
+						"type": "DatasetReference"
+					},
+					"name": "StageTitleEpisode"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DIM_DATE",
+						"type": "DatasetReference"
+					},
+					"name": "DimDate"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_FACT_EPISODES",
+						"type": "DatasetReference"
+					},
+					"name": "FactEpisodes"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_FACT_EPISODES",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          PARENTTCONST as string,",
+				"          SEASONNUMBER as decimal(38,0),",
+				"          EPISODENUMBER as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageTitleEpisode",
+				"source(output(",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTTIMEMINUTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimTitle",
+				"source(output(",
+				"          DATE_ID_SK as decimal(18,0),",
+				"          YEAR as decimal(4,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimDate",
+				"source(output(",
+				"          MAXFCTEPISK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(fact_title_episodes_sk),0) as MaxFctEpiSK FROM IMDB_SCHEMA.FACT_EPISODES',",
+				"     format: 'query') ~> FactEpisodes",
+				"StageTitleEpisode, DimTitle join(StageTitleEpisode@TCONST == DimTitle@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, DimDate join(STARTYEAR == YEAR,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, FactEpisodes join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3 select(mapColumn(",
+				"          TITLE_ID_SK,",
+				"          DATE_ID_SK,",
+				"          SEASONNUMBER,",
+				"          EPISODENUMBER,",
+				"          JOB_ID = DimTitle@JOB_ID,",
+				"          LOAD_DT = DimTitle@LOAD_DT,",
+				"          MAXFCTEPISK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(FACT_TITLE_EPISODES_SK = MAXFCTEPISK+RowNum) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          FACT_TITLE_EPISODES_SK as decimal(38,0),",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          DATE_ID_SK as decimal(38,0),",
+				"          SEASONNUMBER as decimal(38,0),",
+				"          EPISODENUMBER as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          FACT_TITLE_EPISODES_SK,",
+				"          TITLE_ID_SK,",
+				"          DATE_ID_SK,",
+				"          SEASONNUMBER,",
+				"          EPISODENUMBER,",
+				"          JOB_ID,",
+				"          LOAD_DT",
+				"     )) ~> sink"
+			]
+		}
+	}
+}

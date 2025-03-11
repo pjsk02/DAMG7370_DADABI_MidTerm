@@ -1,0 +1,39 @@
+{
+	"name": "SnowflakeTable_Dim_Region",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_IMDB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "REGION_ID_SK",
+				"type": "NUMBER",
+				"precision": 38,
+				"scale": 0
+			},
+			{
+				"name": "REGION_CODE",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "REGION_NAME",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "JOB_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "LOAD_DT",
+				"type": "DATE"
+			}
+		],
+		"typeProperties": {
+			"schema": "IMDB_SCHEMA",
+			"table": "DIM_REGION"
+		}
+	}
+}
