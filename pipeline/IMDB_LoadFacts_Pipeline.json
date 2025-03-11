@@ -5,6 +5,8 @@
 			{
 				"name": "Load_FactTCCC",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.03:30:00",
