@@ -5,6 +5,8 @@
 			{
 				"name": "Load_FactTCCC",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.02:00:00",
@@ -17,6 +19,30 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_IMDb_FCT_TCC",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Coarse"
+				}
+			},
+			{
+				"name": "Load_FactEpi",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.03:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_IMDb_FCT_Episode",
 						"type": "DataFlowReference"
 					},
 					"compute": {
