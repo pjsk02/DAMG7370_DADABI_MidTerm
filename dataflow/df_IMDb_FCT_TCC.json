@@ -1,0 +1,288 @@
+{
+	"name": "df_IMDb_FCT_TCC",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_Principles",
+						"type": "DatasetReference"
+					},
+					"name": "StageTitlePrinci"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_akas",
+						"type": "DatasetReference"
+					},
+					"name": "StageTitleAkas"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_name_basics",
+						"type": "DatasetReference"
+					},
+					"name": "StageNameBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Dim_People",
+						"type": "DatasetReference"
+					},
+					"name": "DimPeople"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimCategory",
+						"type": "DatasetReference"
+					},
+					"name": "DimCategory"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Fact_Title_Cast_Crew",
+						"type": "DatasetReference"
+					},
+					"name": "FactTitleCastCrew"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_crew",
+						"type": "DatasetReference"
+					},
+					"name": "StageTitleCrew"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Fact_Title_Cast_Crew",
+						"type": "DatasetReference"
+					},
+					"name": "sinkFactTCC"
+				}
+			],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "join4"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "lookup3"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          ORDERING as decimal(38,0),",
+				"          NCONST as string,",
+				"          CATEGORY as string,",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageTitlePrinci",
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageTitleAkas",
+				"source(output(",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(38,0),",
+				"          DEATHYEAR as decimal(38,0),",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageNameBasics",
+				"source(output(",
+				"          PERSON_ID_SK as decimal(38,0),",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(38,0),",
+				"          DEATHYEAR as decimal(38,0),",
+				"          PRIMARYPROFESSION as string,",
+				"          KNWONFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimPeople",
+				"source(output(",
+				"          CATEGORY_ID_SK as decimal(38,0),",
+				"          CATEGORY_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimCategory",
+				"source(output(",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTTIMEMINUTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimTitle",
+				"source(output(",
+				"          MAXFCTTCCSK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(fact_title_cast_crew_sk),0) as MaxFctTCCSK FROM IMDB_SCHEMA.FACT_TITLE_CAST_CREW',",
+				"     format: 'query') ~> FactTitleCastCrew",
+				"source(output(",
+				"          TCONST as string,",
+				"          DIRECTORS as string,",
+				"          WRITERS as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageTitleCrew",
+				"StageTitlePrinci, StageTitleAkas lookup(TCONST == TITLEID,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, StageNameBasics lookup(StageTitlePrinci@NCONST == StageNameBasics@NCONST,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup3, DimPeople join(StageTitlePrinci@NCONST == DimPeople@NCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, DimCategory join(CATEGORY == CATEGORY_NAME,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, DimTitle join(StageTitlePrinci@TCONST == DimTitle@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3, FactTitleCastCrew join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join4",
+				"join4 select(mapColumn(",
+				"          JOB,",
+				"          CHARACTERS,",
+				"          JOB_ID = StageTitlePrinci@JOB_ID,",
+				"          LOAD_DT = StageTitlePrinci@LOAD_DT,",
+				"          TITLE_ID_SK,",
+				"          PERSON_ID_SK,",
+				"          CATEGORY_ID_SK,",
+				"          MAXFCTTCCSK,",
+				"          WRITERS",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"lookup2, StageTitleCrew lookup(StageTitlePrinci@TCONST == StageTitleCrew@TCONST,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup3",
+				"select1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(FACT_TITLE_CAST_CREW_SK = MAXFCTTCCSK+RowNum) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          FACT_TITLE_CAST_CREW_SK as decimal(38,0),",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          PERSON_ID_SK as decimal(38,0),",
+				"          CATEGORY_ID_SK as decimal(38,0),",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
+				"          WRITERS as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          FACT_TITLE_CAST_CREW_SK,",
+				"          TITLE_ID_SK,",
+				"          PERSON_ID_SK,",
+				"          CATEGORY_ID_SK,",
+				"          JOB,",
+				"          CHARACTERS,",
+				"          WRITERS,",
+				"          JOB_ID,",
+				"          LOAD_DT",
+				"     )) ~> sinkFactTCC"
+			]
+		}
+	}
+}

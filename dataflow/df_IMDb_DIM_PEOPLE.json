@@ -19,12 +19,46 @@
 					"name": "DimPeople"
 				},
 				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Dim_People",
+						"type": "DatasetReference"
+					},
 					"name": "DimPeopleMaxID"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Dim_People",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
+				"parameters{",
+				"     Job_Id as string (\"49\")",
+				"}",
 				"source(output(",
 				"          NCONST as string,",
 				"          PRIMARYNAME as string,",
@@ -52,8 +86,88 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> DimPeople",
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> DimPeopleMaxID"
+				"source(output(",
+				"          MAXPEOPLESK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(person_id_sk),0) as MaxPeopleSK FROM IMDB_SCHEMA.DIM_PEOPLE',",
+				"     format: 'query') ~> DimPeopleMaxID",
+				"stageNameBasics, DimPeopleMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 aggregate(groupBy(NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          PRIMARYPROFESSION,",
+				"          KNOWNFORTITLES,",
+				"          MAXPEOPLESK),",
+				"     CountRow = count(NCONST)) ~> aggregate1",
+				"aggregate1, DimPeople join(aggregate1@NCONST == DimPeople@NCONST",
+				"     && aggregate1@PRIMARYNAME == DimPeople@PRIMARYNAME",
+				"     && aggregate1@BIRTHYEAR == DimPeople@BIRTHYEAR",
+				"     && aggregate1@DEATHYEAR == DimPeople@DEATHYEAR",
+				"     && aggregate1@PRIMARYPROFESSION == DimPeople@PRIMARYPROFESSION",
+				"     && KNOWNFORTITLES == KNWONFORTITLES,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          PERSON_ID_SK,",
+				"          NCONST = aggregate1@NCONST,",
+				"          PRIMARYNAME = aggregate1@PRIMARYNAME,",
+				"          BIRTHYEAR = aggregate1@BIRTHYEAR,",
+				"          DEATHYEAR = aggregate1@DEATHYEAR,",
+				"          PRIMARYPROFESSION = aggregate1@PRIMARYPROFESSION,",
+				"          KNOWNFORTITLES,",
+				"          MAXPEOPLESK,",
+				"          CountRow",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(PERSON_ID_SK = MAXPEOPLESK +RowNum,",
+				"          Job_Id = $Job_Id,",
+				"          Load_Dt = currentDate()) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          PERSON_ID_SK as decimal(38,0),",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(38,0),",
+				"          DEATHYEAR as decimal(38,0),",
+				"          PRIMARYPROFESSION as string,",
+				"          KNWONFORTITLES as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          PERSON_ID_SK,",
+				"          NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          PRIMARYPROFESSION,",
+				"          KNWONFORTITLES = KNOWNFORTITLES,",
+				"          JOB_ID = Job_Id,",
+				"          LOAD_DT = Load_Dt",
+				"     )) ~> sink1"
 			]
 		}
 	}
