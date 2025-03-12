@@ -1,0 +1,238 @@
+{
+	"name": "df_IMDb_FCT_Distri",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_akas",
+						"type": "DatasetReference"
+					},
+					"name": "StageTitleAkas"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_title_basics",
+						"type": "DatasetReference"
+					},
+					"name": "StageTitleBasics"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimTitle",
+						"type": "DatasetReference"
+					},
+					"name": "DimTitle"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimGenre",
+						"type": "DatasetReference"
+					},
+					"name": "DimGenre"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_Dim_Region",
+						"type": "DatasetReference"
+					},
+					"name": "DimRegion"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DimLanguage",
+						"type": "DatasetReference"
+					},
+					"name": "DimLanguage"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_DIM_DATE",
+						"type": "DatasetReference"
+					},
+					"name": "DimDate"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeTable_FCT_Distribution",
+						"type": "DatasetReference"
+					},
+					"name": "FactDistribution"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "lookup3"
+				},
+				{
+					"name": "lookup4"
+				},
+				{
+					"name": "lookup5"
+				},
+				{
+					"name": "selectGenreSk"
+				},
+				{
+					"name": "selectTitleSk"
+				},
+				{
+					"name": "selectRegionSk"
+				},
+				{
+					"name": "selectLangSk"
+				},
+				{
+					"name": "selectDateSk"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageTitleAkas",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTIMEMINUTES as decimal(38,0),",
+				"          GENRES as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> StageTitleBasics",
+				"source(output(",
+				"          TITLE_ID_SK as decimal(38,0),",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTTIMEMINUTES as decimal(38,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimTitle",
+				"source(output(",
+				"          GENRE_ID_SK as decimal(38,0),",
+				"          GENRE_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimGenre",
+				"source(output(",
+				"          REGION_ID_SK as decimal(38,0),",
+				"          REGION_CODE as string,",
+				"          REGION_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimRegion",
+				"source(output(",
+				"          LANGUAGE_ID_SK as decimal(38,0),",
+				"          LANGUAGE_CODE as string,",
+				"          LANGUAGE_NAME as string,",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimLanguage",
+				"source(output(",
+				"          DATE_ID_SK as decimal(18,0),",
+				"          YEAR as decimal(4,0),",
+				"          JOB_ID as string,",
+				"          LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DimDate",
+				"source(output(",
+				"          MAXFCTDISTRISK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(fact_title_distribution_sk),0) as MaxFctDistriSK FROM IMDB_SCHEMA.FACT_TITLE_DISTRIBUTION',",
+				"     format: 'query') ~> FactDistribution",
+				"DimTitle, StageTitleAkas lookup(TCONST == TITLEID,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"StageTitleBasics, DimGenre lookup(GENRES == GENRE_NAME,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"DimRegion, StageTitleAkas lookup(REGION_CODE == REGION,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup3",
+				"DimLanguage, StageTitleAkas lookup(LANGUAGE_CODE == LANGUAGE,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup4",
+				"DimDate, StageTitleBasics lookup(YEAR == STARTYEAR,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup5",
+				"lookup2 select(mapColumn(",
+				"          GENRE_ID_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectGenreSk",
+				"lookup1 select(mapColumn(",
+				"          TITLE_ID_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectTitleSk",
+				"lookup3 select(mapColumn(",
+				"          REGION_ID_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRegionSk",
+				"lookup4 select(mapColumn(",
+				"          LANGUAGE_ID_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectLangSk",
+				"lookup5 select(mapColumn(",
+				"          DATE_ID_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectDateSk"
+			]
+		}
+	}
+}
