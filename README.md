@@ -79,14 +79,16 @@ As a **Business Analyst**, this solution allows users to:
 - Movie Releases Over Years  
 - IsAdult vs. Non-Adult Trends  
 - Country-wise Movie Counts  
-- Ratings Distribution  
+- Ratings Distribution
+
+![Dashboard_P1_MovieTrendsAndReleases](https://github.com/user-attachments/assets/83e9400f-4f64-4136-a217-f12e472ab7b0)
 
 ### 🎭 Dashboard 2: Genre & People Analysis  
 - Most Frequent Genres  
 - Role-based Contribution Breakdown (Actor, Director, etc.)  
 - Profession & Job Role Distribution  
 
-> 📸 _You can include screenshots or thumbnails here when uploading images to your repo._
+![Dashboard_P2_AgeWiseDataTrends](https://github.com/user-attachments/assets/7ec86fb6-526b-4587-a6be-f6e00703e370)
 
 ---
 
@@ -106,9 +108,17 @@ As a **Business Analyst**, this solution allows users to:
 - Confidence working with **large-scale, nested, and multilingual data**  
 - End-to-end ownership from **data ingestion to insights delivery**
 
+## Dimensional Model
+
+![Dimensional_Model](https://github.com/user-attachments/assets/fc7f9737-c2a7-4d58-b08e-95777d39295f)
+
+## Pipeline (Azure Data Factory)
+
+![Pipeline](https://github.com/user-attachments/assets/2af68739-f7fd-4c4e-a9f1-e5c971e07a62)
+
 ---
 
-📬 Feel free to connect on [LinkedIn](https://www.linkedin.com/in/je-pulipati/)  
-🔗 [Project GitHub Repository](https://github.com/pjsk02/DAMG7370_DADABI_MidTerm)
+**Feel free to fork, explore, and contribute!**
+📬 Let’s connect on [LinkedIn](https://www.linkedin.com/in/je-pulipati/) If you’re hiring for Data Engineering, Analytics, or BI intern roles im open hiring!
 
 ---
