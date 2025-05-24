@@ -43,7 +43,7 @@ As a **Business Analyst**, this solution allows users to:
 | ETL Pipelines    | `Azure Data Factory`, `SQL`, `Alteryx`                                    |
 | Data Warehouse   | `Snowflake` (Medallion Architecture)                                      |
 | Data Modeling    | `ER Studio` (Dimensional Star Schema)                                     |
-| Visualization    | `Tableau` – 2 dashboards (Trends & Genre Insights)                        |
+| Visualization    | `Tableau` – Dashboards (Trends & Genre Insights)                        |
 
 ---
 
