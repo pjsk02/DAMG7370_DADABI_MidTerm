@@ -1,0 +1,276 @@
+--
+-- ER/Studio Data Architect SQL Code Generation
+-- Project :      IMDb_Dim_Model.DM1
+--
+-- Date Created : Tuesday, March 11, 2025 20:50:49
+-- Target DBMS : Snowflake
+--
+
+-- 
+-- TABLE: DIM_CATEGORY 
+--
+
+CREATE TABLE DIM_CATEGORY(
+    category_id_sk    INTEGER        NOT NULL,
+    category_name     VARCHAR(50),
+    JOB_ID            VARCHAR(50),
+    LOAD_DT           DATE,
+    CONSTRAINT PK_CATEGORY_ID_SK PRIMARY KEY (category_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: DIM_DATE 
+--
+
+CREATE TABLE DIM_DATE(
+    date_id_sk    INTEGER        NOT NULL,
+    year          INTEGER,
+    JOB_ID        VARCHAR(50),
+    LOAD_DT       DATE,
+    CONSTRAINT PK_DATE_SK PRIMARY KEY (date_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: DIM_GENRE 
+--
+
+CREATE TABLE DIM_GENRE(
+    genre_id_sk    INTEGER        NOT NULL,
+    genre_name     VARCHAR(50),
+    JOB_ID         VARCHAR(50),
+    LOAD_DT        DATE,
+    CONSTRAINT pk_genre_id PRIMARY KEY (genre_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: DIM_LANGUAGES 
+--
+
+CREATE TABLE DIM_LANGUAGES(
+    language_id_sk    INTEGER        NOT NULL,
+    language_code     VARCHAR(50),
+    language_name     VARCHAR(50),
+    JOB_ID            VARCHAR(50),
+    LOAD_DT           DATE,
+    CONSTRAINT pk_language_id PRIMARY KEY (language_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: DIM_PEOPLE 
+--
+
+CREATE TABLE DIM_PEOPLE(
+    person_id_sk         INTEGER         NOT NULL,
+    nconst               VARCHAR(50),
+    primaryName          VARCHAR(150),
+    birthYear            INTEGER,
+    deathYear            INTEGER,
+    primaryProfession    VARCHAR(50),
+    knwonForTitles       VARCHAR(50),
+    JOB_ID               VARCHAR(50),
+    LOAD_DT              DATE,
+    CONSTRAINT pk_person_id PRIMARY KEY (person_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: DIM_REGION 
+--
+
+CREATE TABLE DIM_REGION(
+    region_id_sk    INTEGER        NOT NULL,
+    region_code     VARCHAR(50),
+    region_name     VARCHAR(50),
+    JOB_ID          VARCHAR(50),
+    LOAD_DT         DATE,
+    CONSTRAINT pk_region_id PRIMARY KEY (region_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: DIM_TITLE 
+--
+
+CREATE TABLE DIM_TITLE(
+    title_id_sk        INTEGER         NOT NULL,
+    tconst             VARCHAR(50),
+    titleType          VARCHAR(50),
+    primaryTitle       VARCHAR(300),
+    originalTitle      VARCHAR(300),
+    isAdult            INTEGER,
+    startYear          INTEGER,
+    endYear            INTEGER,
+    runtTimeMinutes    INTEGER,
+    JOB_ID             VARCHAR(50),
+    LOAD_DT            DATE,
+    CONSTRAINT pk_movie_id PRIMARY KEY (title_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: FACT_EPISODES 
+--
+
+CREATE TABLE FACT_EPISODES(
+    fact_title_episodes_sk    INTEGER        NOT NULL,
+    title_id_sk               INTEGER        NOT NULL,
+    date_id_sk                INTEGER        NOT NULL,
+    seasonNumber              INTEGER,
+    episodeNumber             INTEGER,
+    JOB_ID                    VARCHAR(50),
+    LOAD_DT                   DATE,
+    CONSTRAINT PK12 PRIMARY KEY (fact_title_episodes_sk, title_id_sk, date_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: FACT_TITLE_CAST_CREW 
+--
+
+CREATE TABLE FACT_TITLE_CAST_CREW(
+    fact_title_cast_crew_sk    INTEGER         NOT NULL,
+    title_id_sk                INTEGER         NOT NULL,
+    person_id_sk               INTEGER         NOT NULL,
+    category_id_sk             INTEGER         NOT NULL,
+    job                        VARCHAR(300),
+    characters                 VARCHAR(500),
+    writers                    VARCHAR(50),
+    JOB_ID                     VARCHAR(50),
+    LOAD_DT                    DATE,
+    CONSTRAINT pk_movie_cast_crew_id PRIMARY KEY (fact_title_cast_crew_sk, title_id_sk, person_id_sk, category_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: FACT_TITLE_DISTRIBUTION 
+--
+
+CREATE TABLE FACT_TITLE_DISTRIBUTION(
+    fact_title_distribution_sk    INTEGER        NOT NULL,
+    title_id_sk                   INTEGER        NOT NULL,
+    genre_id_sk                   INTEGER        NOT NULL,
+    region_id_sk                  INTEGER        NOT NULL,
+    language_id_sk                INTEGER        NOT NULL,
+    date_id_sk                    INTEGER        NOT NULL,
+    JOB_ID                        VARCHAR(50),
+    LOAD_DT                       DATE,
+    CONSTRAINT pk_moive_distribution_id PRIMARY KEY (fact_title_distribution_sk, title_id_sk, genre_id_sk, region_id_sk, language_id_sk, date_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: FACT_TITLE_PERFOMANCE 
+--
+
+CREATE TABLE FACT_TITLE_PERFOMANCE(
+    fact_title_perfomance_sk    INTEGER        NOT NULL,
+    title_id_sk                 INTEGER        NOT NULL,
+    averageRating               FLOAT,
+    numVotes                    INTEGER,
+    JOB_ID                      VARCHAR(50),
+    LOAD_DT                     DATE,
+    CONSTRAINT pk_moive_perfomance_id PRIMARY KEY (fact_title_perfomance_sk, title_id_sk) 
+)
+;
+
+
+
+-- 
+-- TABLE: FACT_EPISODES 
+--
+
+ALTER TABLE FACT_EPISODES ADD CONSTRAINT RefDIM_TITLE11 
+    FOREIGN KEY (title_id_sk)
+    REFERENCES DIM_TITLE(title_id_sk)
+;
+
+ALTER TABLE FACT_EPISODES ADD CONSTRAINT RefDIM_DATE12 
+    FOREIGN KEY (date_id_sk)
+    REFERENCES DIM_DATE(date_id_sk)
+;
+
+
+-- 
+-- TABLE: FACT_TITLE_CAST_CREW 
+--
+
+ALTER TABLE FACT_TITLE_CAST_CREW ADD CONSTRAINT RefDIM_TITLE2 
+    FOREIGN KEY (title_id_sk)
+    REFERENCES DIM_TITLE(title_id_sk)
+;
+
+ALTER TABLE FACT_TITLE_CAST_CREW ADD CONSTRAINT RefDIM_PEOPLE3 
+    FOREIGN KEY (person_id_sk)
+    REFERENCES DIM_PEOPLE(person_id_sk)
+;
+
+ALTER TABLE FACT_TITLE_CAST_CREW ADD CONSTRAINT RefDIM_CATEGORY10 
+    FOREIGN KEY (category_id_sk)
+    REFERENCES DIM_CATEGORY(category_id_sk)
+;
+
+
+-- 
+-- TABLE: FACT_TITLE_DISTRIBUTION 
+--
+
+ALTER TABLE FACT_TITLE_DISTRIBUTION ADD CONSTRAINT RefDIM_TITLE4 
+    FOREIGN KEY (title_id_sk)
+    REFERENCES DIM_TITLE(title_id_sk)
+;
+
+ALTER TABLE FACT_TITLE_DISTRIBUTION ADD CONSTRAINT RefDIM_GENRE5 
+    FOREIGN KEY (genre_id_sk)
+    REFERENCES DIM_GENRE(genre_id_sk)
+;
+
+ALTER TABLE FACT_TITLE_DISTRIBUTION ADD CONSTRAINT RefDIM_REGION6 
+    FOREIGN KEY (region_id_sk)
+    REFERENCES DIM_REGION(region_id_sk)
+;
+
+ALTER TABLE FACT_TITLE_DISTRIBUTION ADD CONSTRAINT RefDIM_LANGUAGES7 
+    FOREIGN KEY (language_id_sk)
+    REFERENCES DIM_LANGUAGES(language_id_sk)
+;
+
+ALTER TABLE FACT_TITLE_DISTRIBUTION ADD CONSTRAINT RefDIM_DATE9 
+    FOREIGN KEY (date_id_sk)
+    REFERENCES DIM_DATE(date_id_sk)
+;
+
+
+-- 
+-- TABLE: FACT_TITLE_PERFOMANCE 
+--
+
+ALTER TABLE FACT_TITLE_PERFOMANCE ADD CONSTRAINT RefDIM_TITLE1 
+    FOREIGN KEY (title_id_sk)
+    REFERENCES DIM_TITLE(title_id_sk)
+;
+
+
